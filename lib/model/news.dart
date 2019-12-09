@@ -32,4 +32,6 @@ class Article {
         "level": level,
         "urlToImage": urlToImage,
     };
+
+  static child(String s) {}
 }

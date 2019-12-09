@@ -1,1 +1,0 @@
-const api_url = "https://mobile-iot-lab.firebaseio.com/.json";
