@@ -31,18 +31,17 @@ class _LoginRegisterState extends State<LoginRegister> {
     //Logo
     Widget _logo() {
       return new Hero(
-      tag: 'hero',
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(0.0, 100.0, 0.0, 50.0),
-        child: CircleAvatar(
-          backgroundColor: Colors.transparent,
-          radius: 40.0,
-          child: Image.asset('assets/logo.png'),
+        tag: 'hero',
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(0.0, 100.0, 0.0, 50.0),
+          child: CircleAvatar(
+            backgroundColor: Colors.transparent,
+            radius: 40.0,
+            child: Image.asset('assets/logo.png'),
+          ),
         ),
-      ),
-    );
-  }
-
+      );
+    }
 
     //button widgets
     Widget filledButton(String text, Color splashColor, Color highlightColor,
@@ -95,16 +94,17 @@ class _LoginRegisterState extends State<LoginRegister> {
           _loading = true;
         });
         try {
-          FirebaseUser user = await FirebaseAuth.instance
+          AuthResult authResult = await FirebaseAuth.instance
               .signInWithEmailAndPassword(email: _email, password: _password);
+
+          FirebaseUser user = authResult.user;
           Navigator.of(context).pushReplacementNamed('/home');
         } catch (error) {
           switch (error.code) {
             case "ERROR_USER_NOT_FOUND":
               {
                 _sheetController.setState(() {
-                  errorMsg =
-                      "User with this email/pass not found :(";
+                  errorMsg = "User with this email/pass not found :(";
                   _loading = false;
                 });
                 showDialog(
@@ -158,15 +158,20 @@ class _LoginRegisterState extends State<LoginRegister> {
           _loading = true;
         });
         try {
-          FirebaseUser user = await FirebaseAuth.instance
+          AuthResult authResult = await FirebaseAuth.instance
               .createUserWithEmailAndPassword(
                   email: _email, password: _password);
+          FirebaseUser user = authResult.user;
+
           UserUpdateInfo userUpdateInfo = new UserUpdateInfo();
           userUpdateInfo.displayName = _displayName;
           user.updateProfile(userUpdateInfo).then((onValue) {
             Navigator.of(context).pushReplacementNamed('/home');
-            Firestore.instance.collection('users').document().setData(
-                {'email': _email, 'displayName': _displayName, 'phone': _phone}).then((onValue) {
+            Firestore.instance.collection('users').document().setData({
+              'email': _email,
+              'displayName': _displayName,
+              'phone': _phone
+            }).then((onValue) {
               _sheetController.setState(() {
                 _loading = false;
               });
@@ -217,8 +222,6 @@ class _LoginRegisterState extends State<LoginRegister> {
         return null;
     }
 
-    
-
     void loginSheet() {
       _sheetController = _scaffoldKey.currentState
           .showBottomSheet<void>((BuildContext context) {
@@ -239,7 +242,7 @@ class _LoginRegisterState extends State<LoginRegister> {
                     child: Column(
                       children: <Widget>[
                         SizedBox(
-                        height: 50,
+                          height: 50,
                         ),
                         Padding(
                             padding: Styles.inputFormPadding,
@@ -248,11 +251,11 @@ class _LoginRegisterState extends State<LoginRegister> {
                               keyboardType: TextInputType.emailAddress,
                               autofocus: false,
                               decoration: new InputDecoration(
-                              hintText: "Email",
-                              icon: new Icon(
-                                Icons.mail,
-                                color: Colors.grey,
-                              )),
+                                  hintText: "Email",
+                                  icon: new Icon(
+                                    Icons.mail,
+                                    color: Colors.grey,
+                                  )),
                               validator: emailValidator,
                               onSaved: (input) {
                                 _email = input;
@@ -265,12 +268,13 @@ class _LoginRegisterState extends State<LoginRegister> {
                               autofocus: false,
                               obscureText: true,
                               decoration: new InputDecoration(
-                              hintText: "Password",
-                              icon: new Icon(
-                                Icons.lock,
-                                color: Colors.grey,
-                              )),
-                              validator: (input) => input.isEmpty ? "Required" : null,
+                                  hintText: "Password",
+                                  icon: new Icon(
+                                    Icons.lock,
+                                    color: Colors.grey,
+                                  )),
+                              validator: (input) =>
+                                  input.isEmpty ? "Required" : null,
                               onSaved: (input) => _password = input,
                             )),
                         SizedBox(
@@ -326,80 +330,83 @@ class _LoginRegisterState extends State<LoginRegister> {
                 padding: Styles.allPadding,
                 children: <Widget>[
                   SingleChildScrollView(
-                    child: Form(
-                    child: Column(
-                      children: <Widget>[
+                      child: Form(
+                    child: Column(children: <Widget>[
                       SizedBox(
                         height: 50,
                       ),
                       Padding(
-                            padding: Styles.inputFormPadding,
-                            child: TextFormField(
-                              maxLines: 1,
-                              autofocus: false,
-                              decoration: new InputDecoration(
-                              hintText: "Name",
-                              icon: new Icon(
-                                Icons.account_circle,
-                                color: Colors.grey,
-                              )),
-                              validator: (value) {
-                            if (value.isEmpty) return 'Name can\'t be empty';
-                            if (value.length < 1) return 'Name is too short';
-                            return null;
+                          padding: Styles.inputFormPadding,
+                          child: TextFormField(
+                            maxLines: 1,
+                            autofocus: false,
+                            decoration: new InputDecoration(
+                                hintText: "Name",
+                                icon: new Icon(
+                                  Icons.account_circle,
+                                  color: Colors.grey,
+                                )),
+                            validator: (value) {
+                              if (value.isEmpty) return 'Name can\'t be empty';
+                              if (value.length < 1) return 'Name is too short';
+                              return null;
                             },
                             onSaved: (input) => _displayName = input,
-                            )),
+                          )),
                       Padding(
-                            padding: Styles.inputFormPadding,
-                            child: TextFormField(
-                              maxLines: 1,
-                              autofocus: false,
-                              decoration: new InputDecoration(
-                              hintText: "Email",
-                              icon: new Icon(
-                                Icons.email,
-                                color: Colors.grey,
-                              )),
-                               validator: (value) => value.isEmpty ? 'Email can\'t be empty' : null,
+                          padding: Styles.inputFormPadding,
+                          child: TextFormField(
+                            maxLines: 1,
+                            autofocus: false,
+                            decoration: new InputDecoration(
+                                hintText: "Email",
+                                icon: new Icon(
+                                  Icons.email,
+                                  color: Colors.grey,
+                                )),
+                            validator: (value) =>
+                                value.isEmpty ? 'Email can\'t be empty' : null,
                             onSaved: (input) => _email = input,
-                            )),
+                          )),
                       Padding(
-                            padding: Styles.inputFormPadding,
-                            child: TextFormField(
-                              maxLines: 1,
-                              autofocus: false,
-                              decoration: new InputDecoration(
-                              hintText: "Phone",
-                              icon: new Icon(
-                                Icons.phone,
-                                color: Colors.grey,
-                              )),
-                              validator: (value) => value.isEmpty ? 'Phone can\'t be empty' : null,
-                              onSaved: (input) => _phone = input,
-                            )),
+                          padding: Styles.inputFormPadding,
+                          child: TextFormField(
+                            maxLines: 1,
+                            autofocus: false,
+                            decoration: new InputDecoration(
+                                hintText: "Phone",
+                                icon: new Icon(
+                                  Icons.phone,
+                                  color: Colors.grey,
+                                )),
+                            validator: (value) =>
+                                value.isEmpty ? 'Phone can\'t be empty' : null,
+                            onSaved: (input) => _phone = input,
+                          )),
                       Padding(
-                            padding: Styles.inputFormPadding,
-                            child: TextFormField(
+                          padding: Styles.inputFormPadding,
+                          child: TextFormField(
                             maxLines: 1,
                             autofocus: false,
                             obscureText: true,
                             decoration: new InputDecoration(
-                            hintText: "Password",
-                            icon: new Icon(
-                              Icons.lock,
-                              color: Colors.grey,
-                            )),
+                                hintText: "Password",
+                                icon: new Icon(
+                                  Icons.lock,
+                                  color: Colors.grey,
+                                )),
                             validator: (value) {
-                            if (value.isEmpty) return 'Password can\'t be empty';
-                            if (value.length < 8) return 'Password is too short';
-                            return null;
+                              if (value.isEmpty)
+                                return 'Password can\'t be empty';
+                              if (value.length < 8)
+                                return 'Password is too short';
+                              return null;
                             },
                             onSaved: (input) => _password = input,
-                            )),
+                          )),
                       SizedBox(
                         height: 30,
-                      ),          
+                      ),
                       Padding(
                         padding: EdgeInsets.only(
                             left: 20,
@@ -443,7 +450,7 @@ class _LoginRegisterState extends State<LoginRegister> {
     return Scaffold(
         key: _scaffoldKey,
         appBar: new AppBar(
-        title: new Text("IOT Early Flood Detection"),
+          title: new Text("IOT Early Flood Detection"),
         ),
         body: Column(
           children: <Widget>[
